@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>7swazys · Full Frame Stretcher | No Cropping</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e0a0f 0%, #22121a 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', monospace;
+            min-height: 100vh;
+            padding: 0.8rem;
+        }
+
+        .glass-card {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(45, 18, 25, 0.75);
+            backdrop-filter: blur(14px);
+            border-radius: 1.8rem;
+            border: 1px solid rgba(255, 72, 72, 0.25);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 1rem 1.2rem;
+            background: rgba(34, 12, 18, 0.7);
+            border-bottom: 1px solid rgba(248, 56, 56, 0.3);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .header-left h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffc0c0, #f63b3b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #d59b9b;
+            margin-top: 0.2rem;
+            font-size: 0.65rem;
+            border-left: 3px solid #f63b3b;
+            padding-left: 0.6rem;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #4a2626;
+            gap: 0.2rem;
+            padding: 0 0.8rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.7rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #e08c8c;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            font-family: inherit;
+            touch-action: manipulation;
+        }
+
+        .tab-btn.active {
+            color: #f63b3b;
+            border-bottom-color: #f63b3b;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1.2rem;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .btn-primary {
+            background: linear-gradient(100deg, #eb2525, #af1e1e);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            touch-action: manipulation;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .card {
+            background: rgba(34, 12, 18, 0.6);
+            border: 1px solid #4a2626;
+            border-radius: 1.2rem;
+            padding: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 0.8rem;
+        }
+
+        .input-group label {
+            display: block;
+            color: #d59b9b;
+            margin-bottom: 0.3rem;
+            font-size: 0.7rem;
+        }
+
+        input {
+            width: 100%;
+            background: #221212;
+            border: 1px solid #4a2626;
+            border-radius: 1rem;
+            padding: 0.6rem 0.8rem;
+            color: white;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            padding: 0.7rem 1rem;
+            text-align: center;
+            font-size: 0.6rem;
+            color: #884c4c;
+            border-top: 1px solid rgba(184, 72, 72, 0.2);
+        }
+
+        .preview-area {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 1.2rem;
+            padding: 0.8rem;
+            border: 1px solid #4a2626;
+        }
+
+        .canvas-wrapper {
+            background: #0a0507;
+            border-radius: 1rem;
+            border: 2px solid #6e2e2e;
+            overflow: auto;
+            max-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stretch-canvas {
+            display: block;
+            background: #000;
+            margin: 0 auto;
+        }
+
+        .size-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .size-btn, .preset-btn {
+            background: #2d1414;
+            border: 1px solid #b34b4b;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1.5rem;
+            color: #ffbaba;
+            cursor: pointer;
+            font-size: 0.65rem;
+            touch-action: manipulation;
+        }
+
+        .controls-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-top: 0.8rem;
+        }
+
+        .slider-card {
+            background: rgba(34, 12, 18, 0.7);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            border: 1px solid #4a2626;
+        }
+
+        .slider-card label {
+            font-size: 0.7rem;
+            color: #ffbcbc;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 4px;
+            background: #3b1e1e;
+            border-radius: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 5px;
+            background: #f63b3b;
+            margin-top: -6px;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            background: #221212;
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            color: #f6a3a3;
+            margin-left: 0.4rem;
+        }
+
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+            justify-content: center;
+        }
+
+        .info-text {
+            font-size: 0.65rem;
+            color: #b98080;
+            margin-top: 0.3rem;
+        }
+
+        .dimension-display {
+            font-family: monospace;
+            background: #221212;
+            padding: 0.15rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+        }
+
+        .download-area {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-top: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 0.5rem; }
+            .controls-panel { grid-template-columns: 1fr; }
+            .tab-content { padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-card">
+    <div class="header">
+        <div class="header-left">
+            <h1>7swazys vid stretcher</h1>
+            <div class="sub">7swazys-credits</div>
+        </div>
+        <button class="btn-primary" id="globalResetBtn" style="background: #631c1c;">reset</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="video">video</button>
+        <button class="tab-btn" data-tab="image">image</button>
+        <button class="tab-btn" data-tab="info">info</button>
+    </div>
+
+    <div id="videoTab" class="tab-content active">
+        <div class="preview-area">
+            <div class="input-group">
+                <label>upload video (mp4, mov, webm)</label>
+                <input type="file" id="videoUpload" accept="video/mp4,video/quicktime,video/webm">
+            </div>
+            <div class="canvas-wrapper" id="videoCanvasWrapper">
+                <canvas id="videoCanvas" class="stretch-canvas"></canvas>
+            </div>
+            <div class="info-text text-center mt-2">
+                canvas size: <span id="videoCanvasW" class="dimension-display">0</span> x <span id="videoCanvasH" class="dimension-display">0</span> (expands with stretch)
+            </div>
+            <div class="download-area">
+                <button class="btn-primary" id="downloadVideoBtn">download mp4</button>
+            </div>
+            <div class="info-text text-center" id="downloadStatus"></div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="slider-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>horizontal stretch (width multiplier)</label>
+                    <span class="slider-value" id="videoScaleXVal">1.00</span>
+                </div>
+                <input type="range" id="videoStretchX" min="0.3" max="3.0" step="0.01" value="1.0">
+            </div>
+            <div class="slider-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>vertical stretch (height multiplier)</label>
+                    <span class="slider-value" id="videoScaleYVal">1.00</span>
+                </div>
+                <input type="range" id="videoStretchY" min="0.3" max="3.0" step="0.01" value="1.0">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color:#ffc0c0; font-size: 0.85rem;">preset aspect ratios (changes canvas size)</h3>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-vpreset="tiktok">tiktok 9:16</button>
+                <button class="preset-btn" data-vpreset="youtube">youtube 16:9</button>
+                <button class="preset-btn" data-vpreset="instagram">instagram 4:5</button>
+                <button class="preset-btn" data-vpreset="square">square 1:1</button>
+                <button class="preset-btn" data-vpreset="original">original size</button>
+            </div>
+            <div class="info-text">canvas automatically resizes to show FULL stretched content</div>
+        </div>
+    </div>
+
+    <div id="imageTab" class="tab-content">
+        <div class="preview-area">
+            <div class="input-group">
+                <label>upload image (jpg, png, webp)</label>
+                <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="canvas-wrapper" id="imageCanvasWrapper">
+                <canvas id="imageCanvas" class="stretch-canvas"></canvas>
+            </div>
+            <div class="info-text text-center mt-2">
+                canvas size: <span id="imageCanvasW" class="dimension-display">0</span> x <span id="imageCanvasH" class="dimension-display">0</span>
+            </div>
+            <div class="download-area">
+                <button class="btn-primary" id="downloadImageBtn">download png</button>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="slider-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>horizontal stretch (width multiplier)</label>
+                    <span class="slider-value" id="imageScaleXVal">1.00</span>
+                </div>
+                <input type="range" id="imageStretchX" min="0.3" max="3.0" step="0.01" value="1.0">
+            </div>
+            <div class="slider-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <label>vertical stretch (height multiplier)</label>
+                    <span class="slider-value" id="imageScaleYVal">1.00</span>
+                </div>
+                <input type="range" id="imageStretchY" min="0.3" max="3.0" step="0.01" value="1.0">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color:#ffc0c0; font-size: 0.85rem;">preset aspect ratios</h3>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-ipreset="tiktok">tiktok 9:16</button>
+                <button class="preset-btn" data-ipreset="youtube">youtube 16:9</button>
+                <button class="preset-btn" data-ipreset="instagram">instagram 4:5</button>
+                <button class="preset-btn" data-ipreset="square">square 1:1</button>
+                <button class="preset-btn" data-ipreset="original">original size</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoTab" class="tab-content">
+        <div class="card">
+            <h3 style="color:#ffc0c0;">no cropping - full frame stretching</h3>
+            <p style="color:#d59b9b; line-height: 1.4; font-size: 0.8rem;">when you stretch horizontally or vertically, the CANVAS SIZE EXPANDS to show the entire stretched content. nothing gets cut off. download captures the full stretched image/video at its actual size. use presets for common aspect ratios like tiktok (9:16) or youtube (16:9).</p>
+        </div>
+    </div>
+
+    <footer>canvas expands with stretch | no cropping | full frame download</footer>
+</div>
+
+<script>
+    (function() {
+        let videoElement = null;
+        let videoReady = false;
+        let videoSourceWidth = 640, videoSourceHeight = 360;
+        let videoStretchX = 1.0, videoStretchY = 1.0;
+        let videoCanvas = document.getElementById('videoCanvas');
+        let videoCtx = videoCanvas.getContext('2d');
+        let isRecording = false;
+
+        function updateVideoCanvasSize() {
+            const newWidth = Math.round(videoSourceWidth * videoStretchX);
+            const newHeight = Math.round(videoSourceHeight * videoStretchY);
+            videoCanvas.width = newWidth;
+            videoCanvas.height = newHeight;
+            document.getElementById('videoCanvasW').innerText = newWidth;
+            document.getElementById('videoCanvasH').innerText = newHeight;
+            drawVideoFrame();
+        }
+
+        function drawVideoFrame() {
+            if (!videoReady || !videoElement || videoElement.readyState < 2) {
+                videoCtx.fillStyle = '#0a0507';
+                videoCtx.fillRect(0, 0, videoCanvas.width || 300, videoCanvas.height || 300);
+                videoCtx.fillStyle = '#d59b9b';
+                videoCtx.font = '12px Inter';
+                videoCtx.fillText('upload a video', 20, 40);
+                return;
+            }
+            videoCtx.drawImage(videoElement, 0, 0, videoSourceWidth, videoSourceHeight, 
+                               0, 0, videoCanvas.width, videoCanvas.height);
+        }
+
+        function updateVideoStretch() {
+            videoStretchX = parseFloat(document.getElementById('videoStretchX').value);
+            videoStretchY = parseFloat(document.getElementById('videoStretchY').value);
+            document.getElementById('videoScaleXVal').innerText = videoStretchX.toFixed(2);
+            document.getElementById('videoScaleYVal').innerText = videoStretchY.toFixed(2);
+            updateVideoCanvasSize();
+        }
+
+        function initVideo() {
+            if (videoElement) {
+                videoElement.pause();
+                videoElement.src = '';
+            }
+            videoElement = document.createElement('video');
+            videoElement.crossOrigin = "Anonymous";
+            videoElement.loop = false;
+            videoElement.muted = true;
+            videoElement.playsInline = true;
+            videoElement.style.display = 'none';
+            document.body.appendChild(videoElement);
+            videoElement.addEventListener('loadeddata', () => {
+                videoSourceWidth = videoElement.videoWidth;
+                videoSourceHeight = videoElement.videoHeight;
+                videoReady = true;
+                updateVideoCanvasSize();
+                videoElement.play().catch(e => console.log);
+            });
+            videoElement.addEventListener('timeupdate', () => drawVideoFrame());
+        }
+
+        document.getElementById('videoStretchX').addEventListener('input', updateVideoStretch);
+        document.getElementById('videoStretchY').addEventListener('input', updateVideoStretch);
+
+        document.getElementById('videoUpload').addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const url = URL.createObjectURL(e.target.files[0]);
+                videoElement.src = url;
+                videoElement.load();
+                videoReady = false;
+                document.getElementById('videoStretchX').value = '1.0';
+                document.getElementById('videoStretchY').value = '1.0';
+                updateVideoStretch();
+                videoElement.play().catch(e => console.log);
+            }
+        });
+
+        function setVideoCanvasSize(targetW, targetH) {
+            const stretchXNeeded = targetW / videoSourceWidth;
+            const stretchYNeeded = targetH / videoSourceHeight;
+            document.getElementById('videoStretchX').value = stretchXNeeded;
+            document.getElementById('videoStretchY').value = stretchYNeeded;
+            updateVideoStretch();
+        }
+
+        document.querySelectorAll('[data-vpreset]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!videoReady) { alert("Please upload a video first"); return; }
+                const preset = btn.getAttribute('data-vpreset');
+                if (preset === 'tiktok') setVideoCanvasSize(540, 960);
+                else if (preset === 'youtube') setVideoCanvasSize(960, 540);
+                else if (preset === 'instagram') setVideoCanvasSize(540, 675);
+                else if (preset === 'square') setVideoCanvasSize(720, 720);
+                else if (preset === 'original') setVideoCanvasSize(videoSourceWidth, videoSourceHeight);
+            });
+        });
+
+        async function downloadVideoMP4() {
+            if (!videoReady) { 
+                document.getElementById('downloadStatus').innerHTML = '<span style="color:#ff8888">Please upload a video first</span>';
+                setTimeout(() => document.getElementById('downloadStatus').innerHTML = '', 2000);
+                return; 
+            }
+            if (isRecording) return;
+
+            const outW = videoCanvas.width;
+            const outH = videoCanvas.height;
+            if (outW < 10 || outH < 10) return;
+
+            document.getElementById('downloadStatus').innerHTML = '<span class="loading-spinner"></span> Recording stretched video...';
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = outW;
+            tempCanvas.height = outH;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            let mimeType = '';
+            const mp4Codecs = ['video/mp4;codecs=h264', 'video/mp4;codecs=avc1.42E01E', 'video/mp4'];
+            for (let codec of mp4Codecs) {
+                if (MediaRecorder.isTypeSupported(codec)) {
+                    mimeType = codec;
+                    break;
+                }
+            }
+            if (!mimeType) mimeType = 'video/webm';
+
+            const wasPlaying = !videoElement.paused;
+            const originalTime = videoElement.currentTime;
+            videoElement.pause();
+            videoElement.currentTime = 0;
+            await new Promise(r => { videoElement.addEventListener('seeked', r, { once: true }); });
+
+            const stream = tempCanvas.captureStream(30);
+            const recorder = new MediaRecorder(stream, { mimeType: mimeType });
+            let chunks = [];
+
+            recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `stretched_video_${outW}x${outH}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                videoElement.currentTime = originalTime;
+                if (wasPlaying) videoElement.play().catch(e => console.log);
+                isRecording = false;
+                document.getElementById('downloadStatus').innerHTML = '<span style="color:#88ff88">✓ Download started!</span>';
+                setTimeout(() => document.getElementById('downloadStatus').innerHTML = '', 3000);
+            };
+
+            recorder.start(100);
+            isRecording = true;
+            videoElement.play();
+
+            function captureFrame() {
+                if (videoElement.ended || videoElement.currentTime >= videoElement.duration - 0.05) {
+                    recorder.stop();
+                    return;
+                }
+                tempCtx.drawImage(videoElement, 0, 0, videoSourceWidth, videoSourceHeight, 0, 0, outW, outH);
+                requestAnimationFrame(captureFrame);
+            }
+            captureFrame();
+        }
+
+        document.getElementById('downloadVideoBtn').addEventListener('click', downloadVideoMP4);
+
+        let imgElement = null;
+        let imgReady = false;
+        let imgSourceWidth = 800, imgSourceHeight = 600;
+        let imgStretchX = 1.0, imgStretchY = 1.0;
+        let imgCanvas = document.getElementById('imageCanvas');
+        let imgCtx = imgCanvas.getContext('2d');
+
+        function updateImageCanvasSize() {
+            const newWidth = Math.round(imgSourceWidth * imgStretchX);
+            const newHeight = Math.round(imgSourceHeight * imgStretchY);
+            imgCanvas.width = newWidth;
+            imgCanvas.height = newHeight;
+            document.getElementById('imageCanvasW').innerText = newWidth;
+            document.getElementById('imageCanvasH').innerText = newHeight;
+            drawImageFrame();
+        }
+
+        function drawImageFrame() {
+            if (!imgReady || !imgElement) {
+                imgCtx.fillStyle = '#0a0507';
+                imgCtx.fillRect(0, 0, imgCanvas.width || 300, imgCanvas.height || 300);
+                imgCtx.fillStyle = '#d59b9b';
+                imgCtx.font = '12px Inter';
+                imgCtx.fillText('upload an image', 20, 40);
+                return;
+            }
+            imgCtx.drawImage(imgElement, 0, 0, imgSourceWidth, imgSourceHeight, 0, 0, imgCanvas.width, imgCanvas.height);
+        }
+
+        function updateImageStretch() {
+            imgStretchX = parseFloat(document.getElementById('imageStretchX').value);
+            imgStretchY = parseFloat(document.getElementById('imageStretchY').value);
+            document.getElementById('imageScaleXVal').innerText = imgStretchX.toFixed(2);
+            document.getElementById('imageScaleYVal').innerText = imgStretchY.toFixed(2);
+            updateImageCanvasSize();
+        }
+
+        document.getElementById('imageStretchX').addEventListener('input', updateImageStretch);
+        document.getElementById('imageStretchY').addEventListener('input', updateImageStretch);
+
+        document.getElementById('imageUpload').addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const url = URL.createObjectURL(e.target.files[0]);
+                imgElement = new Image();
+                imgElement.onload = () => {
+                    imgSourceWidth = imgElement.width;
+                    imgSourceHeight = imgElement.height;
+                    imgReady = true;
+                    document.getElementById('imageStretchX').value = '1.0';
+                    document.getElementById('imageStretchY').value = '1.0';
+                    updateImageStretch();
+                    URL.revokeObjectURL(url);
+                };
+                imgElement.src = url;
+            }
+        });
+
+        function setImageCanvasSize(targetW, targetH) {
+            const stretchXNeeded = targetW / imgSourceWidth;
+            const stretchYNeeded = targetH / imgSourceHeight;
+            document.getElementById('imageStretchX').value = stretchXNeeded;
+            document.getElementById('imageStretchY').value = stretchYNeeded;
+            updateImageStretch();
+        }
+
+        document.querySelectorAll('[data-ipreset]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!imgReady) { alert("Please upload an image first"); return; }
+                const preset = btn.getAttribute('data-ipreset');
+                if (preset === 'tiktok') setImageCanvasSize(540, 960);
+                else if (preset === 'youtube') setImageCanvasSize(960, 540);
+                else if (preset === 'instagram') setImageCanvasSize(540, 675);
+                else if (preset === 'square') setImageCanvasSize(720, 720);
+                else if (preset === 'original') setImageCanvasSize(imgSourceWidth, imgSourceHeight);
+            });
+        });
+
+        function downloadImagePNG() {
+            if (!imgReady) { alert("Please upload an image first"); return; }
+            const url = imgCanvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `stretched_image_${imgCanvas.width}x${imgCanvas.height}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        document.getElementById('downloadImageBtn').addEventListener('click', downloadImagePNG);
+
+        document.getElementById('globalResetBtn').addEventListener('click', () => {
+            document.getElementById('videoStretchX').value = '1.0';
+            document.getElementById('videoStretchY').value = '1.0';
+            document.getElementById('imageStretchX').value = '1.0';
+            document.getElementById('imageStretchY').value = '1.0';
+            updateVideoStretch();
+            updateImageStretch();
+        });
+
+        initVideo();
+
+        const tabs = document.querySelectorAll('.tab-btn');
+        const videoTab = document.getElementById('videoTab');
+        const imageTab = document.getElementById('imageTab');
+        const infoTab = document.getElementById('infoTab');
+
+        function switchTab(tabId) {
+            videoTab.classList.remove('active');
+            imageTab.classList.remove('active');
+            infoTab.classList.remove('active');
+            if (tabId === 'video') videoTab.classList.add('active');
+            else if (tabId === 'image') imageTab.classList.add('active');
+            else if (tabId === 'info') infoTab.classList.add('active');
+            tabs.forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+        tabs.forEach(btn => btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab'))));
+    })();
+</script>
+</body>
+</html>
