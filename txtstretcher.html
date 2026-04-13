@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>7swazys · Pixel Text Stretcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e0a0f 0%, #22121a 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', monospace;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .glass-card {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(45, 18, 25, 0.75);
+            backdrop-filter: blur(14px);
+            border-radius: 2.5rem;
+            border: 1px solid rgba(255, 72, 72, 0.25);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 1.5rem 2rem;
+            background: rgba(34, 12, 18, 0.7);
+            border-bottom: 1px solid rgba(248, 56, 56, 0.3);
+        }
+
+        .header-left h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffc0c0, #f63b3b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #d59b9b;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            border-left: 3px solid #f63b3b;
+            padding-left: 0.85rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .two-columns {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .preview-section {
+            flex: 1.5;
+            min-width: 300px;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            color: #d59b9b;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: #221212;
+            border: 1px solid #4a2626;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            color: white;
+            outline: none;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        input[type="text"]:focus {
+            border-color: #f63b3b;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 12px;
+            -webkit-appearance: none;
+            background: #4a2626;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #f63b3b;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #ff9999;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: 0.05s linear;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #ff5555;
+            transform: scale(1.05);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #f63b3b;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #ff9999;
+        }
+
+        input[type="range"]::-moz-range-track {
+            height: 12px;
+            background: #4a2626;
+            border-radius: 8px;
+        }
+
+        .slider-value {
+            display: inline-block;
+            background: #2a1515;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            color: #ff9999;
+            margin-left: 0.5rem;
+            font-weight: 600;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(100deg, #eb2525, #af1e1e);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .btn-primary:hover {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #3b1e1e;
+            border: 1px solid #4a2626;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            color: #e08c8c;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .preview-area {
+            margin-top: 0;
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+            border: 2px solid #4a2626;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        #pixelCanvas {
+            display: block;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .note {
+            font-size: 0.7rem;
+            color: #884c4c;
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(184, 72, 72, 0.2);
+        }
+
+        footer {
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #884c4c;
+            border-top: 1px solid rgba(184, 72, 72, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="glass-card">
+    <div class="header">
+        <div class="header-left">
+            <h1>Pixel Text Stretcher</h1>
+            <div class="sub">visible pixels · stretch width/height separately · white background</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="two-columns">
+            <div class="controls">
+                <div class="input-group">
+                    <label>Text</label>
+                    <input type="text" id="textInput" value="PIXEL" placeholder="Type your text here">
+                </div>
+
+                <div class="input-group">
+                    <label>Max width before line wrap (pixels)</label>
+                    <input type="range" id="wrapSlider" min="80" max="600" step="10" value="300">
+                    <span class="slider-value" id="wrapValue">300px</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Horizontal stretch (width only)</label>
+                    <input type="range" id="stretchX" min="0.5" max="4" step="0.1" value="1">
+                    <span class="slider-value" id="stretchXValue">1.0</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Vertical stretch (height only)</label>
+                    <input type="range" id="stretchY" min="0.5" max="4" step="0.1" value="1">
+                    <span class="slider-value" id="stretchYValue">1.0</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Pixel size (visible blocky pixels)</label>
+                    <input type="range" id="qualitySlider" min="1" max="16" step="1" value="1">
+                    <span class="slider-value" id="qualityValue">1 (sharp)</span>
+                    <div style="font-size: 0.7rem; color: #aa7777; margin-top: 0.3rem;">
+                        higher value = bigger, visible pixels around text
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Text color</label>
+                    <input type="color" id="colorPicker" value="#000000">
+                </div>
+
+                <div class="flex-row">
+                    <button id="resetBtn" class="btn-secondary">Reset</button>
+                    <button id="screenshotBtn" class="btn-primary">Screenshot (PNG)</button>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-area">
+                    <canvas id="pixelCanvas"></canvas>
+                </div>
+                <div class="note">
+                    horizontal stretch = width only · vertical stretch = height only · pixel slider makes text blocky
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>7swazys ui template · pixel text stretcher</footer>
+</div>
+
+<script>
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const textInput = document.getElementById('textInput');
+    const stretchXSlider = document.getElementById('stretchX');
+    const stretchYSlider = document.getElementById('stretchY');
+    const qualitySlider = document.getElementById('qualitySlider');
+    const wrapSlider = document.getElementById('wrapSlider');
+    const colorPicker = document.getElementById('colorPicker');
+    const resetBtn = document.getElementById('resetBtn');
+    const screenshotBtn = document.getElementById('screenshotBtn');
+
+    const stretchXVal = document.getElementById('stretchXValue');
+    const stretchYVal = document.getElementById('stretchYValue');
+    const qualityVal = document.getElementById('qualityValue');
+    const wrapValue = document.getElementById('wrapValue');
+
+    function renderPixelatedText() {
+        const text = textInput.value || " ";
+        const scaleX = parseFloat(stretchXSlider.value);
+        const scaleY = parseFloat(stretchYSlider.value);
+        const pixelSize = parseInt(qualitySlider.value);
+        const wrapWidth = parseInt(wrapSlider.value);
+        const textColor = colorPicker.value;
+        
+        const offscreen = document.createElement('canvas');
+        const offCtx = offscreen.getContext('2d');
+        
+        const fontSize = 72;
+        offCtx.font = `${fontSize}px system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif`;
+        offCtx.fillStyle = textColor;
+        
+        const chars = text.split('');
+        const lines = [];
+        let currentLine = '';
+        
+        for (let i = 0; i < chars.length; i++) {
+            const testLine = currentLine + chars[i];
+            const metrics = offCtx.measureText(testLine);
+            if (metrics.width > wrapWidth && currentLine.length > 0) {
+                lines.push(currentLine);
+                currentLine = chars[i];
+            } else {
+                currentLine = testLine;
+            }
+        }
+        lines.push(currentLine);
+        
+        const lineHeight = fontSize * 1.3;
+        const textHeight = lines.length * lineHeight;
+        
+        let maxWidth = 0;
+        for (let line of lines) {
+            const metrics = offCtx.measureText(line);
+            maxWidth = Math.max(maxWidth, metrics.width);
+        }
+        
+        offscreen.width = maxWidth + 40;
+        offscreen.height = textHeight + 40;
+        offCtx.fillStyle = 'white';
+        offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+        offCtx.font = `${fontSize}px system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif`;
+        offCtx.fillStyle = textColor;
+        offCtx.textBaseline = 'top';
+        
+        for (let i = 0; i < lines.length; i++) {
+            offCtx.fillText(lines[i], 20, 20 + (i * lineHeight));
+        }
+        
+        const targetWidth = Math.max(1, Math.floor(offscreen.width * scaleX));
+        const targetHeight = Math.max(1, Math.floor(offscreen.height * scaleY));
+        
+        const stretchedCanvas = document.createElement('canvas');
+        stretchedCanvas.width = targetWidth;
+        stretchedCanvas.height = targetHeight;
+        const stretchedCtx = stretchedCanvas.getContext('2d');
+        stretchedCtx.imageSmoothingEnabled = false;
+        stretchedCtx.drawImage(offscreen, 0, 0, offscreen.width, offscreen.height, 0, 0, targetWidth, targetHeight);
+        
+        if (pixelSize > 1) {
+            const smallWidth = Math.max(1, Math.floor(targetWidth / pixelSize));
+            const smallHeight = Math.max(1, Math.floor(targetHeight / pixelSize));
+            
+            const smallCanvas = document.createElement('canvas');
+            smallCanvas.width = smallWidth;
+            smallCanvas.height = smallHeight;
+            const smallCtx = smallCanvas.getContext('2d');
+            smallCtx.imageSmoothingEnabled = false;
+            smallCtx.drawImage(stretchedCanvas, 0, 0, targetWidth, targetHeight, 0, 0, smallWidth, smallHeight);
+            
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            ctx.imageSmoothingEnabled = false;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+            ctx.drawImage(smallCanvas, 0, 0, smallWidth, smallHeight, 0, 0, targetWidth, targetHeight);
+        } else {
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            ctx.imageSmoothingEnabled = false;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+            ctx.drawImage(stretchedCanvas, 0, 0);
+        }
+        
+        stretchXVal.textContent = scaleX.toFixed(1);
+        stretchYVal.textContent = scaleY.toFixed(1);
+        qualityVal.textContent = pixelSize === 1 ? '1 (sharp)' : `${pixelSize} (pixels visible)`;
+        wrapValue.textContent = wrapWidth + 'px';
+    }
+    
+    function resetAll() {
+        textInput.value = 'PIXEL';
+        stretchXSlider.value = '1';
+        stretchYSlider.value = '1';
+        qualitySlider.value = '1';
+        wrapSlider.value = '300';
+        colorPicker.value = '#000000';
+        renderPixelatedText();
+    }
+    
+    async function takeScreenshot() {
+        const previewArea = document.querySelector('.preview-area');
+        
+        try {
+            const html2canvas = (await import('https://cdn.skypack.dev/html2canvas')).default;
+            
+            const screenshotCanvas = await html2canvas(previewArea, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false,
+                useCORS: true
+            });
+            
+            const link = document.createElement('a');
+            link.download = 'pixel_text.png';
+            link.href = screenshotCanvas.toDataURL('image/png');
+            link.click();
+        } catch (error) {
+            console.error('Screenshot error:', error);
+            alert('Screenshot failed. Try again.');
+        }
+    }
+    
+    textInput.addEventListener('input', renderPixelatedText);
+    stretchXSlider.addEventListener('input', renderPixelatedText);
+    stretchYSlider.addEventListener('input', renderPixelatedText);
+    qualitySlider.addEventListener('input', renderPixelatedText);
+    wrapSlider.addEventListener('input', renderPixelatedText);
+    colorPicker.addEventListener('input', renderPixelatedText);
+    resetBtn.addEventListener('click', resetAll);
+    screenshotBtn.addEventListener('click', takeScreenshot);
+    
+    renderPixelatedText();
+</script>
+</body>
+</html>
